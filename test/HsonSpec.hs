@@ -4,4 +4,7 @@ import Test.Hspec
 import Hson
 
 spec :: Spec
-spec = undefined
+spec = do 
+  describe "Hson" $ do 
+    it "waiting for test" $ do
+      pending
