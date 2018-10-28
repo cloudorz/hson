@@ -1,4 +1,10 @@
-module Parser where
+module Parser (
+  Parser
+, jString
+, jFloat
+, jInteger
+, jBool
+) where
 
 import Control.Monad (void)
 import Data.Void
@@ -17,19 +23,24 @@ lexeme = L.lexeme sc
 symbol :: String -> Parser String
 symbol = L.symbol sc
 
-rword :: String -> Parser ()
-rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
+checkNoFollow :: Parser a -> Parser a
+checkNoFollow = (<* notFollowedBy printChar)
 
 jsonString :: Parser String
 jsonString = between (char '"') (char '"') (many (try alphaNumChar <|> spaceChar))
 
 jString :: Parser String
-jString = lexeme jsonString
+jString = checkNoFollow $ lexeme jsonString
 
-jNumber = lexeme L.decimal
+jFloat :: Parser Double
+jFloat = checkNoFollow $ L.signed sc (lexeme L.float)
+
+jInteger :: Parser Integer
+jInteger = checkNoFollow $ L.signed sc (lexeme L.decimal)
 
 jBool :: Parser Bool
-jBool = (return True <* rword "true") <|> (return False <* rword "false")
+jBool = checkNoFollow $ (return True <* rword "true") <|> (return False <* rword "false")
+  where rword = try . lexeme . string
 
 colon :: Parser ()
 colon = void $ symbol ":"
