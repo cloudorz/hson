@@ -4,6 +4,8 @@ module Parser (
 , jFloat
 , jInteger
 , jBool
+, jKeyStringValue
+, jTArray
 ) where
 
 import Control.Monad (void)
@@ -47,3 +49,9 @@ colon = void $ symbol ":"
 
 comma :: Parser ()
 comma = void $ symbol ","
+
+jKeyStringValue :: Parser (String, String)
+jKeyStringValue = (,) <$> (jString <* colon) <*> jString
+
+jTArray :: Parser [String]
+jTArray = jString `sepBy` comma
