@@ -14,9 +14,17 @@ spec = do
       it "parse \"abc cde\"   " $ do
         parse jString "(undfined)" "\"abc cde\"   " `shouldBe` return "abc cde"
       it "can't parse \"abc cde\"abc   " $ do
-        parse jString "(undfined)" "\"abc cde\"abc   " `shouldSatisfy` isLeft
+        parse jString "(undfined)" "\"abc cde\"abc   " `shouldBe` return "abc cde"
       it "can't parse \"abc cde\",   " $ do
-        parse jString "(undfined)" "\"abc cde\",   " `shouldSatisfy` isLeft
+        parse jString "(undfined)" "\"abc cde\",   " `shouldBe` return "abc cde"
+      it "parse \"abc cde\"   ,   " $ do
+        parse jString "(undfined)" "\"abc cde\"  ,   " `shouldBe` return "abc cde"
+      it "parse \"abc cde\"   :   " $ do
+        parse jString "(undfined)" "\"abc cde\"  :   " `shouldBe` return "abc cde"
+      it "parse \"abc cde\"   }   " $ do
+        parse jString "(undfined)" "\"abc cde\"  }   " `shouldBe` return "abc cde"
+      it "parse \"abc cde\"   ]   " $ do
+        parse jString "(undfined)" "\"abc cde\"  ]   " `shouldBe` return "abc cde"
       it "parse \r" $ do
         parse jString "(undfined)" "\"\r\" " `shouldBe` return "\r"
       it "parse \t" $ do
@@ -89,3 +97,5 @@ spec = do
         parse jKeyStringValue "(undfined)" "\"key\": \"value\"" `shouldBe` return ("key", "value")
       it "test parse " $ do 
         parse jTArray "" "\"a\" , \"b\"" `shouldBe` return ["a", "b"]
+      it "test parse " $ do 
+        parse jTArray "" "\"a\"abc, \"b\"" `shouldBe` return ["a", "b"]
