@@ -32,7 +32,7 @@ jsonString :: Parser String
 jsonString = between (char '"') (char '"') (many (try alphaNumChar <|> spaceChar))
 
 jString :: Parser String
-jString = checkNoFollow $ lexeme jsonString
+jString = lexeme jsonString
 
 jFloat :: Parser Double
 jFloat = checkNoFollow $ L.signed sc (lexeme L.float)
