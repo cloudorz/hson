@@ -4,8 +4,10 @@ module Parser (
 , jFloat
 , jInteger
 , jBool
-, jKeyStringValue
-, jTArray
+, Value
+, jDecode
+, jArray
+, jObject
 ) where
 
 import Control.Monad (void)
@@ -15,6 +17,14 @@ import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void String
+
+data Value = S String
+           | F Double
+           | N Integer
+           | B Bool
+           | Array [Value]
+           | Object [(String, Value)]
+           deriving (Show)
 
 sc :: Parser ()
 sc = L.space space1 empty empty
@@ -28,21 +38,38 @@ symbol = L.symbol sc
 checkNoFollow :: Parser a -> Parser a
 checkNoFollow = (<* notFollowedBy printChar)
 
-jsonString :: Parser String
-jsonString = between (char '"') (char '"') (many (try alphaNumChar <|> spaceChar))
-
 jString :: Parser String
-jString = lexeme jsonString
+--jString :: Parser Value
+jString = (lexeme . try) jsonString
+  where
+    anyChar = try alphaNumChar <|> spaceChar
+    jsonString = between (char '"') (char '"') (many anyChar)
 
 jFloat :: Parser Double
-jFloat = checkNoFollow $ L.signed sc (lexeme L.float)
+jFloat = L.signed sc (lexeme L.float)
 
 jInteger :: Parser Integer
-jInteger = checkNoFollow $ L.signed sc (lexeme L.decimal)
+jInteger = L.signed sc (lexeme L.decimal)
 
 jBool :: Parser Bool
-jBool = checkNoFollow $ (return True <* rword "true") <|> (return False <* rword "false")
+jBool = (return True <* rword "true") <|> (return False <* rword "false")
   where rword = try . lexeme . string
+
+jDecode :: Parser Value
+jDecode = between sc eof jValue >>= check
+  where
+    check v = case v of 
+                Array xs -> return $ Array xs
+                Object xs -> return $ Object xs
+                _ -> fail $ "json format issue"
+
+jValue :: Parser Value
+jValue = S <$> jString
+     <|> B <$> jBool
+     <|> F <$> jFloat
+     <|> N <$> jInteger
+     <|> Array <$> jArray
+     <|> Object <$> jObject
 
 colon :: Parser ()
 colon = void $ symbol ":"
@@ -50,8 +77,15 @@ colon = void $ symbol ":"
 comma :: Parser ()
 comma = void $ symbol ","
 
-jKeyStringValue :: Parser (String, String)
-jKeyStringValue = (,) <$> (jString <* colon) <*> jString
+jArray :: Parser [Value]
+jArray = between (symbol "[") (symbol "]") itemsParser
+  where
+    followBy = lookAhead (comma <|> void (char ']'))
+    itemsParser = (jValue <* followBy) `sepBy` comma
 
-jTArray :: Parser [String]
-jTArray = jString `sepBy` comma
+jObject :: Parser [(String, Value)]
+jObject = between (symbol "{") (symbol "}") itemsParser
+  where
+    followBy = lookAhead (comma <|> void (char '}'))
+    keyValuePair = (,) <$> (jString <* colon) <*> jValue
+    itemsParser = (keyValuePair <* followBy) `sepBy` comma
