@@ -4,7 +4,7 @@ module Parser (
 , jFloat
 , jInteger
 , jBool
-, Value
+, Value(S, F, N, B, Array, Object)
 , jDecode
 , jArray
 , jObject
@@ -24,7 +24,7 @@ data Value = S String
            | B Bool
            | Array [Value]
            | Object [(String, Value)]
-           deriving (Show)
+           deriving (Show, Eq)
 
 sc :: Parser ()
 sc = L.space space1 empty empty
@@ -39,8 +39,7 @@ checkNoFollow :: Parser a -> Parser a
 checkNoFollow = (<* notFollowedBy printChar)
 
 jString :: Parser String
---jString :: Parser Value
-jString = (lexeme . try) jsonString
+jString = lexeme jsonString
   where
     anyChar = try alphaNumChar <|> spaceChar
     jsonString = between (char '"') (char '"') (many anyChar)
@@ -64,12 +63,12 @@ jDecode = between sc eof jValue >>= check
                 _ -> fail $ "json format issue"
 
 jValue :: Parser Value
-jValue = S <$> jString
-     <|> B <$> jBool
-     <|> F <$> jFloat
-     <|> N <$> jInteger
-     <|> Array <$> jArray
-     <|> Object <$> jObject
+jValue = S <$> try jString
+     <|> B <$> try jBool
+     <|> F <$> try jFloat
+     <|> N <$> try jInteger
+     <|> Array <$> try jArray
+     <|> Object <$> try jObject
 
 colon :: Parser ()
 colon = void $ symbol ":"
