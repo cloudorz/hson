@@ -86,4 +86,21 @@ spec = do
         parse jInteger "(undfined)" "+1" `shouldBe` return 1
     describe "jArray: parse json array" $ do
       it "parse [1, 2, 3]" $ do
-        pending
+        parse jArray "(undfined)" "[1, 2, 3]" `shouldBe` return [N 1, N 2, N 3]
+      it "parse [\"a\", \"b\", \"c\"]" $ do
+        parse jArray "(undfined)" "[\"a\", \"b\", \"c\"]" `shouldBe` return [S "a", S "b", S "c"]
+      it "parse [\"a\", 1, 0.1]" $ do
+        parse jArray "(undfined)" "[\"a\", 1, 0.1]" `shouldBe` return [S "a", N 1, F 0.1]
+      it "pase [{\"a\": 1}, {\"a\": \"c\"}]" $ do
+        parse jArray "(undfined)" "[{\"a\": 1}, {\"a\": \"c\"}]" `shouldBe` return [Object [("a", N 1)], Object [("a", S "c")]]
+      it "parse [[1, 2], [\"a\", 2.2]]" $ do 
+        parse jArray "(undfined)" "[[1, 2], [\"a\", 2.2]]" `shouldBe` return [Array [N 1, N 2], Array [S "a", F 2.2]]
+    describe "jObject: parse json object" $ do
+      it "parse {\"abc\" : \"abc\"}" $ do
+        parse jObject "(undfined)" "{\"abc\" : \"abc\"}" `shouldBe` return [("abc", S "abc")]
+      it "parse {\"abc\" : \"abc\", \"n2\" : 233, \"n3\": 2.33}" $ do
+        parse jObject "(undfined)" "{\"abc\" : \"abc\", \"n2\" : 233, \"n3\": 2.33}" `shouldBe` return [("abc", S "abc"), ("n2", N 233), ("n3", F 2.33)]
+      it "parse {\"array\": [1, \"a\", 1.1]}" $ do
+        parse jObject "(undfined)" "{\"array\": [1, \"a\", 1.1]}" `shouldBe` return [("array", Array [N 1, S "a", F 1.1])]
+      it "parse {\"abc\": {\"abc\": 2.22}}" $ do
+        parse jObject "(undfined)" "{\"abc\": {\"abc\": 2.22}}" `shouldBe` return [("abc", Object [("abc", F 2.22)])]
