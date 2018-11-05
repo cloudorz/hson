@@ -106,4 +106,4 @@ spec = do
         parse jObject "(undfined)" "{\"abc\": {\"abc\": 2.22}}" `shouldBe` return [("abc", Object [("abc", F 2.22)])]
     describe "jDecode: parse json" $ do
       it "pase {\"a\": [1, 2, 3], \"b\": \"vvv\", \"c\": {\"abc\": \"string\"}}" $ do
-        parse jDecode "(undfined)" "  {\"a\": [1, 2, 3], \"b\": \"vvv\", \"c\": {\"abc\": \"string\"}}" `shouldBe` return (Object [("a", Array [N 1, N 2, N 3]), ("b", S "vvv"), ("c", Object [("abc", S "string")])])
+        parse jJSON "(undfined)" "  {\"a\": [1, 2, 3], \"b\": \"vvv\", \"c\": {\"abc\": \"string\"}}" `shouldBe` return (Object [("a", Array [N 1, N 2, N 3]), ("b", S "vvv"), ("c", Object [("abc", S "string")])])

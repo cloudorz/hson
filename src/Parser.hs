@@ -5,7 +5,7 @@ module Parser (
 , jInteger
 , jBool
 , Value(S, F, N, B, Array, Object)
-, jDecode
+, jJSON
 , jArray
 , jObject
 ) where
@@ -54,8 +54,8 @@ jBool :: Parser Bool
 jBool = (return True <* rword "true") <|> (return False <* rword "false")
   where rword = try . lexeme . string
 
-jDecode :: Parser Value
-jDecode = between sc eof jValue >>= check
+jJSON :: Parser Value
+jJSON = between sc eof jValue >>= check
   where
     check v = case v of 
                 Array xs -> return $ Array xs
