@@ -1,6 +1,17 @@
 module Hson
-    ( someFunc
+    ( hson
+    , decode
     ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+import Parser
+import Text.Megaparsec
+import Text.Megaparsec.Error
+
+hson :: IO ()
+hson = interact decode
+
+decode :: String -> String
+decode str = case parse jJSON "(undfined)" str of
+               Left bundle -> errorBundlePretty bundle
+               Right value -> show value
+
